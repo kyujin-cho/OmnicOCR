@@ -1,0 +1,4 @@
+pyocr
+requests
+pymysql
+Pillow

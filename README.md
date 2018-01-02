@@ -31,12 +31,12 @@
     `series` int(10) NOT NULL,
     `rank` int(10) NOT NULL,
     `type` varchar(20)
-    ;
+    );
     CREATE TABLE `broadcast` (
     `series` int(10) NOT NULL,
     `streamer_id` varchar(45) NOT NULL,
     `start` datetime NOT NULL,
     `end` datetime
-    ;
+    );
     ```
     3. 실행합니다.

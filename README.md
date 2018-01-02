@@ -43,5 +43,5 @@
     PRIMARY KEY (`series`)
     ) ENGINE=InnoDB AUTO_INCREMENT=109 DEFAULT CHARSET=utf8;
     ```
-    Broadcast 테이블은 방송 시작과 끝 정보가 들어갈 테이블입니다.
+    Broadcast 테이블은 방송 시작과 끝 정보가 들어갈 테이블입니다.   
     3. 실행합니다.

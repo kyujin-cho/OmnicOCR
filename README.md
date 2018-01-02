@@ -24,7 +24,7 @@
     streamers = [<List of twitch streamers>]
     ```
     2. 다음과 같이 DB를 구성합니다.
-        CREATE TABLE `score` (
+        ```CREATE TABLE `score` (
         `index_` int(10) unsigned NOT NULL AUTO_INCREMENT,
         `streamer_id` varchar(45) NOT NULL,
         `series` int(10) unsigned NOT NULL,
@@ -38,6 +38,6 @@
         `start` datetime NOT NULL,
         `end` datetime DEFAULT NULL,
         PRIMARY KEY (`series`)
-        ) ENGINE=InnoDB AUTO_INCREMENT=109 DEFAULT CHARSET=utf8;
+        ) ENGINE=InnoDB AUTO_INCREMENT=109 DEFAULT CHARSET=utf8;```
     Broadcast 테이블은 방송 시작과 끝 정보가 들어갈 테이블입니다.   
     3. 실행합니다.

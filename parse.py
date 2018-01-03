@@ -68,7 +68,6 @@ def check_rating(key, s):
         'token': token
     })
     base = urllib.request.urlopen(base).read().decode('utf-8').split('\n')
-    print(list(filter(lambda s: '#EXT-X-MEDIA' in s, base)))
     ind = 0
     for i in base:
         print(i)
@@ -91,20 +90,31 @@ def check_rating(key, s):
     check = 0
     rank = '*'
     init = True
-    isDuo = len(sys.argv) == 2 and sys.argv[1] == '1'
+    isDuo = len(sys.argv) == 3 and sys.argv[2] == '1'
     try:
+        print(url)
         while s.status:
             updated = False
             load = urllib.request.urlopen(url).read().decode('utf-8').split('\n')[6:-1]
-
+            index = 0
+            while not load[index].startswith('#EXTINF'):
+                index += 1
+            
+            print('Loads')
+            print('\n'.join(load))
+            print('Index:', index)
             time_diff = 0
             log_text('Waiting for {} rank...'.format('Duo' if isDuo else 'Solo') if init else '')
-            for i in range(0, len(load), 2):
+            for i in range(index, len(load), 2):
                 start_ = time.time()
+                print('123'+ load[i])
                 t = float(load[i][8:-5])
-
+                ts_url = load[i+1]
+                if not load[i+1].startswith('http'):
+                    ts_url = ('/').join(url.split('/')[:-1]) + '/' +load[i+1]
+                    print(ts_url)
                 with open('ts_s/' + str(i//2+1) + '.ts', 'wb') as fw:
-                    fw.write(urllib.request.urlopen(load[i+1]).read())
+                    fw.write(urllib.request.urlopen(ts_url).read())
 
                 command[4] = 'ts_s/' + str(i//2+1) + '.ts'
                 for j in range(1, 4):
@@ -125,7 +135,7 @@ def check_rating(key, s):
                         p = subprocess.Popen('tesseract {} stdout -l pubg -psm 7'.format(command[-1].replace('.jpg', '_crop.jpg')).split(' '), stdout=subprocess.PIPE, stderr=None)
                         p.wait()
                         txt = p.communicate()[0].decode('utf-8').split('\n')[0]
-                        if 4 > len(txt) > 1 and txt[0] == '#' and txt[1:].isnumeric():
+                        if 4 > len(txt) > 1 and txt[0] == '#' and txt[1:].isnumeric() and int(txt[1:]) > 0:
                             if rank == '*':
                                 rank = txt
                                 check = 1
@@ -157,8 +167,10 @@ def check_rating(key, s):
     except urllib.error.HTTPError: 
         return
 
-PUBGon = dict([(s, False) for s in settings.streamers])
-threads = dict([(s, None) for s in settings.streamers])
+PUBGon = {}
+PUBGon[sys.argv[1]] = False
+threads = {}
+threads[sys.argv[1]] = None
 
 s = Status()
 

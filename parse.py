@@ -20,6 +20,7 @@ class OmnicDB:
         self.curs = self.conn.cursor()
 
     def add_score(self, rank, streamer_id, gametype='솔로'):
+        
         self.conn.ping(True)
         sql = 'select `series` from `broadcast` where `streamer_id`=%s order by `series` desc limit 1;'
         self.curs.execute(sql, streamer_id)
@@ -27,7 +28,11 @@ class OmnicDB:
         series = rows[0][0]
 
         sql = 'insert into `score`(`series`, `rank`, `type`, `streamer_id`) value(%s, %s, %s, %s)'
-        self.curs.execute(sql, (series, rank, gametype, streamer_id))
+        if streamer_id=='yeokka':
+            print('Mock inserting')
+            print(sql.replace('%s', '{}').format(series,rank,gametype,streamer_id))
+        else:
+            self.curs.execute(sql, (series, rank, gametype, streamer_id))
 
 class Status:
     def __init__(self):
@@ -124,7 +129,7 @@ def check_rating(key, s):
                     p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     # p = subprocess.Popen(command)
                     p.wait()
-                    start, txt = '', ''
+                    start, txt, txt_2 = '', '', ''
                     start = tool.image_to_string(Image.open(command[-1]).crop((70, 655, 160, 695)), lang='pubg_start', builder=pyocr.builders.TextBuilder())
                     if 'START' in start or 'RSART' in start or 'RSTAT' in start:
                         isDuo = ('RSART' in start or 'RSTAT' in start)
@@ -132,10 +137,14 @@ def check_rating(key, s):
                         log_text('Started MATCHMAKING... Setting init to True...')
                     if init:
                         Image.open(command[-1]).crop((160, 170, 220, 210) if isDuo else (120, 170, 180, 210)).save(command[-1].replace('.jpg', '_crop.jpg'))
+                        Image.open(command[-1]).crop((1060, 20, 1155, 85)).convert('LA').save(command[-1].replace('.jpg', '_crop_gs.png'))
                         p = subprocess.Popen('tesseract {} stdout -l pubg -psm 7'.format(command[-1].replace('.jpg', '_crop.jpg')).split(' '), stdout=subprocess.PIPE, stderr=None)
                         p.wait()
                         txt = p.communicate()[0].decode('utf-8').split('\n')[0]
-                        if 4 > len(txt) > 1 and txt[0] == '#' and txt[1:].isnumeric() and int(txt[1:]) > 0:
+                        p2 = subprocess.Popen('tesseract {} stdout -l pubg -psm 7'.format(command[-1].replace('.jpg', '_crop_gs.png')).split(' '), stdout=subprocess.PIPE, stderr=None)
+                        p2.wait()
+                        txt_2 = p2.communicate()[0].decode('utf-8').split('\n')[0]
+                        if 4 > len(txt) > 1 and txt[0] == '#' and txt[1:].isnumeric() and int(txt[1:]) > 0 and txt == txt_2 and not ('RSART' in start) and not ('START' in start):
                             if rank == '*':
                                 rank = txt
                                 check = 1
@@ -153,7 +162,7 @@ def check_rating(key, s):
                             log_text(txt, check)
                     log_text(command[-1])
                     log_text(t)
-                    log_text(txt, '/', start) 
+                    log_text(txt, '/', txt_2, '/', start) 
                 log_text(time.time() - start_)       
                 time_diff += (t - (time.time() - start_))
                 

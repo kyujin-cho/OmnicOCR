@@ -57,6 +57,7 @@ def log_text(*kwargs, prefix='I'):
 
 def check_rating(key):
     while True:
+        log_text(s.status)
         while not s.status:
             log_text(s.status)
             continue

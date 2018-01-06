@@ -201,7 +201,7 @@ while True:
             log_text('Limit:',headers['RateLimit-Limit'])
             log_text('Remaining:', headers['RateLimit-Remaining'])
             s.status = (response != None and response['data'] != None and len(response['data']) != 0 and (response['data'][0]['game_id'] == '493057'))
-            print(s.status)
+            log_text(s.status)
         except KeyError as e: 
             log_text(e, prefix='E')
             log_text(response, prefix='E')

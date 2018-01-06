@@ -59,6 +59,7 @@ def check_rating(key):
     while True:
         while not s.status:
             continue
+        log_text('PUBG turned on')
         get_token = 'https://api.twitch.tv/api/channels/{}/access_token?'.format(key)
         get_token += urllib.parse.urlencode({
             'adblock':'false', 

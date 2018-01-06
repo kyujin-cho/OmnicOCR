@@ -192,7 +192,7 @@ def check_rating(key):
             return
 
 for streamer in PUBGon.keys():
-    threads[streamer] = threading.Thread(target=check_rating, args=(streamer,s,))
+    threads[streamer] = threading.Thread(target=check_rating, args=(streamer,))
     threads[streamer].start()
 
 while True:

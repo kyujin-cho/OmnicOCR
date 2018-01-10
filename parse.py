@@ -29,11 +29,7 @@ class OmnicDB:
         series = rows[0][0]
 
         sql = 'insert into `score`(`series`, `rank`, `type`, `streamer_id`) value(%s, %s, %s, %s)'
-        if streamer_id=='yeokka':
-            print('Mock inserting')
-            print(sql.replace('%s', '{}').format(series,rank,gametype,streamer_id))
-        else:
-            self.curs.execute(sql, (series, rank, gametype, streamer_id))
+        self.curs.execute(sql, (series, rank, gametype, streamer_id))
 
 class Status:
     def __init__(self):

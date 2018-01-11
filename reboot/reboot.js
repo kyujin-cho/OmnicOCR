@@ -22,7 +22,7 @@ const restart_process = (error, stdout, stderr) => {
     build += '표준 출력: ' + stdout + '\n'
     build += '에러: ' + stderr + '\n'      
     client.say('#' + process.argv[2], "서버가 재부팅되었습니다. 잠시 기다려주세요.")  
-    setTimer(timer_func, 5000)
+    setTimeout(timer_func, 5000)
 }
 
 const timer_func = () => {

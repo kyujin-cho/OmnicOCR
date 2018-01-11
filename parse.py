@@ -17,9 +17,6 @@ sys.stdout = open('log.txt', 'w')
 sys.stderr = open('log_err.txt', 'w')
 
 from PIL import Image
-
-
-
 class OmnicDB:
     def __init__(self):
         self.conn = pymysql.connect(host=settings.host, user=settings.user, password=settings.password, db=settings.db, charset='utf8', autocommit=True)
@@ -56,7 +53,7 @@ def check_rating(key):
         while not s.status:
             print(s.status)
             continue
-        p = subprocess.Popen('sudo rm -rf ts_s')
+        p = subprocess.Popen('sudo rm -rf ts_s'.split(' '))
         p.wait()
         os.mkdir('ts_s')
         print('PUBG turned on')

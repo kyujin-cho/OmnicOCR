@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api')
 const tmi = require('tmi.js')
 const exec = require('child_process').exec
 const options = require('./config')
-const token = 'MYTOKEN'
+const token = options.telegram_token
 const bot = new TelegramBot(token, {polling: true})
 
 

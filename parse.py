@@ -12,10 +12,12 @@ import settings
 import pymysql
 import os
 import os.path
+import sys
+sys.stdout = open('log.txt', 'w')
+sys.stderr = open('log_err.txt', 'w')
 
 from PIL import Image
 
-log = open('log.txt', 'w')
 
 
 class OmnicDB:
@@ -48,21 +50,16 @@ s = Status()
 
 a = OmnicDB()
 
-def log_text(*kwargs, prefix='I'):
-    build = ' '.join([str(item) for item in kwargs])
-    print(build)
-    log.write(prefix + '-' + str(time.time()) + ':' + build + '\n')
-    log.flush()
 
 def check_rating(key):
     while True:
         while not s.status:
-            log_text(s.status)
+            print(s.status)
             continue
         p = subprocess.Popen('sudo rm -rf ts_s')
         p.wait()
         os.mkdir('ts_s')
-        log_text('PUBG turned on')
+        print('PUBG turned on')
         get_token = 'https://api.twitch.tv/api/channels/{}/access_token?'.format(key)
         get_token += urllib.parse.urlencode({
             'adblock':'false', 
@@ -72,7 +69,7 @@ def check_rating(key):
             'player_type':'site'
         })
         get_token = requests.get(get_token, headers={'Client-ID': settings.ClientID}).json()
-        log_text(get_token)
+        print(get_token)
         token = get_token['token']
         sig = get_token['sig']
 
@@ -125,7 +122,7 @@ def check_rating(key):
                 print('\n'.join(load))
                 print('Index:', index)
                 time_diff = 0
-                log_text('Waiting for {} rank...'.format('Duo' if isDuo else 'Solo') if init else '')
+                print('Waiting for {} rank...'.format('Duo' if isDuo else 'Solo') if init else '')
                 for i in range(index, len(load), 2):
                     start_ = time.time()
                     print('123'+ load[i])
@@ -150,7 +147,7 @@ def check_rating(key):
                         if 'START' in start or 'RSART' in start or 'RSTAT' in start:
                             isDuo = ('RSART' in start or 'RSTAT' in start)
                             init = True
-                            log_text('Started MATCHMAKING... Setting init to True...')
+                            print('Started MATCHMAKING... Setting init to True...')
                         if init:
                             Image.open(command[-1]).crop((160, 170, 220, 210) if isDuo else (120, 170, 180, 210)).save(command[-1].replace('.jpg', '_crop.jpg'))
                             Image.open(command[-1]).crop((1060, 20, 1155, 85)).convert('LA').save(command[-1].replace('.jpg', '_crop_gs.png'))
@@ -175,19 +172,19 @@ def check_rating(key):
                                     else:
                                         check = 1
                                         rank = txt
-                                log_text(txt, check)
-                        log_text(command[-1])
-                        log_text(t)
-                        log_text(txt, '/', txt_2, '/', start) 
-                    log_text(time.time() - start_)       
+                                print(txt, check)
+                        print(command[-1])
+                        print(t)
+                        print(txt, '/', txt_2, '/', start) 
+                    print(time.time() - start_)       
                     time_diff += (t - (time.time() - start_))
                     
-                log_text(ranks)
+                print(ranks)
                 cnt += 1
                 if updated:
-                    log_text('rank updated! Setting init to False...')
+                    print('rank updated! Setting init to False...')
                 elif time_diff > 0:
-                    log_text('Sleeping', time_diff)
+                    print('Sleeping', time_diff)
                     time.sleep(time_diff)
         except urllib.error.HTTPError: 
             return
@@ -202,16 +199,16 @@ while True:
             response = requests.get('https://api.twitch.tv/helix/streams?user_login=' + streamer, headers={'Client-ID': settings.ClientID})
             headers = response.headers
             response = response.json()
-            log_text('Limit:',headers['RateLimit-Limit'])
-            log_text('Remaining:', headers['RateLimit-Remaining'])
+            print('Limit:',headers['RateLimit-Limit'])
+            print('Remaining:', headers['RateLimit-Remaining'])
             s.status = (response != None and response['data'] != None and len(response['data']) != 0 and (response['data'][0]['game_id'] == '493057'))
         except KeyError as e: 
-            log_text(e, prefix='E')
-            log_text(response, prefix='E')
+            print(e, prefix='E')
+            print(response, prefix='E')
         except ConnectionResetError as e1:
-            log_text(e1, prefix='E')
-            log_text(response, prefix='E')
+            print(e1, prefix='E')
+            print(response, prefix='E')
         except ConnectionError as e2:
-            log_text(e2, prefix='E')
-            log_text(response, prefix='E')
+            print(e2, prefix='E')
+            print(response, prefix='E')
         time.sleep(3)

@@ -13,8 +13,6 @@ import pymysql
 import os
 import os.path
 import sys
-sys.stdout = open('log.txt', 'w')
-sys.stderr = open('log_err.txt', 'w')
 
 from PIL import Image
 class OmnicDB:

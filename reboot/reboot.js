@@ -2,16 +2,14 @@ const TelegramBot = require('node-telegram-bot-api')
 const tmi = require('tmi.js')
 const exec = require('child_process').exec
 const options = require('./config')
-const token = options.telegram_token
-const bot = new TelegramBot(token, {polling: true})
-
 
 var client = new tmi.client(options)
 
 // Connect the client to the server..
 client.connect()
-client.join('#' + process.argv[2])
-
+client.on('connected', (address, port) => {
+    client.join('#' + process.argv[2])    
+})
 let build = ''
 
 const restart_process = (error, stdout, stderr) => {
@@ -41,10 +39,12 @@ const timer_func = () => {
     )
 }
 
-bot.onText('/message/', (msg) => {
-    const text = msg.text.split(' ')
-    const streamer_name = text[0]
-    if(streamer_name == process.argv[2]) {
-        const child = exec('sudo service yousabot restart', restart_process)
+client.on("message", function (channel, userstate, message, self) {
+    // Don't listen to my own messages..
+    if (self) return;
+
+    if(message.startsWith('!파업신고 ') && channel.substring(1) == process.argv[2]) {
+        console.log(channel + '채널에서 파업신고! ')
+        const child = exec('sudo service yousabot restart', restart_process)        
     }
 })

@@ -5,6 +5,8 @@ const options = require('./config')
 
 var client = new tmi.client(options)
 
+const bot = new TelegramBot(options.telegram_token, {polling: true})
+
 // Connect the client to the server..
 client.connect()
 client.on('connected', (address, port) => {

@@ -10,6 +10,9 @@ import pyocr.builders
 import requests
 import settings
 import pymysql
+import os
+import os.path
+
 from PIL import Image
 
 log = open('log.txt', 'w')
@@ -53,10 +56,12 @@ def log_text(*kwargs, prefix='I'):
 
 def check_rating(key):
     while True:
-        log_text(s.status)
         while not s.status:
             log_text(s.status)
             continue
+        p = subprocess.Popen('sudo rm -rf ts_s')
+        p.wait()
+        os.mkdir('ts_s')
         log_text('PUBG turned on')
         get_token = 'https://api.twitch.tv/api/channels/{}/access_token?'.format(key)
         get_token += urllib.parse.urlencode({
@@ -209,5 +214,4 @@ while True:
         except ConnectionError as e2:
             log_text(e2, prefix='E')
             log_text(response, prefix='E')
-        finally:
-            time.sleep(3)
+        time.sleep(3)

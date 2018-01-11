@@ -1,11 +1,10 @@
-const TelegramBot = require('node-telegram-bot-api')
 const tmi = require('tmi.js')
 const exec = require('child_process').exec
 const options = require('./config')
+const axios = require('axios')
 
 var client = new tmi.client(options)
 
-const bot = new TelegramBot(options.telegram_token, {polling: true})
 
 // Connect the client to the server..
 client.connect()
@@ -36,7 +35,11 @@ const timer_func = () => {
                 console.log(`exec error: ${error}`);
             }          
             build += '상태: ' + stdout
-            bot.sendMessage(msg.chat.id, build)                                         
+            axios.post('https://api.telegram.org/bot452401108:AAHxQg7lbhbHTjmTUmw_zPOE6A9_m1nNEjU/sendMessage', 
+            {
+                chat_id: '-1001336753459',
+                text: build
+            })                                   
         }
     )
 }

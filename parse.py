@@ -159,7 +159,7 @@ def check_rating(key):
                                 else:
                                     if rank == txt:
                                         check += 1
-                                        if check == 4:
+                                        if check == 3:
                                             ranks.append(txt)
                                             a.add_score(int(txt[1:]), key, gametype=('듀오' if isDuo else '솔로'))
                                             updated = True

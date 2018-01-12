@@ -162,7 +162,7 @@ def check_rating(key):
             elif time_diff > 0:
                 print('Sleeping', time_diff)
                 time.sleep(time_diff)
-    except urllib.error.HTTPError: 
+    except: 
         return
 
 on = False

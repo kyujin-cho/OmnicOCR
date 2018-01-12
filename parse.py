@@ -196,6 +196,8 @@ while True:
             response = response.json()
             print('Limit:',headers['RateLimit-Limit'])
             print('Remaining:', headers['RateLimit-Remaining'])
+            if not s.status and (response != None and response['data'] != None and len(response['data']) != 0 and (response['data'][0]['game_id'] == '493057')):
+                exit(1)
             s.status = (response != None and response['data'] != None and len(response['data']) != 0 and (response['data'][0]['game_id'] == '493057'))
         except KeyError as e: 
             print(e, prefix='E')

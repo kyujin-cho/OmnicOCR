@@ -142,7 +142,7 @@ def check_rating(key):
                                     check += 1
                                     if check == 3:
                                         ranks.append(txt)
-                                        a.add_score(int(txt[1:]), key, gametype=('듀오' if isDuo else '솔로'))
+                                        a.add_score(int(txt[1:]), key, gametype=('팀' if isDuo else '솔로'))
                                         updated = True
                                         init = False
                                 else:
@@ -176,14 +176,14 @@ while not on:
         print('Remaining:', headers['RateLimit-Remaining'])
         on = (response != None and response['data'] != None and len(response['data']) != 0 and (response['data'][0]['game_id'] == '493057'))
     except KeyError as e: 
-        print(e, prefix='E')
-        print(response, prefix='E')
+        print('Error!', e)
+        print('Error!', response)
     except ConnectionResetError as e1:
-        print(e1, prefix='E')
-        print(response, prefix='E')
+        print('Error!', e1)
+        print('Error!', response)
     except ConnectionError as e2:
-        print(e2, prefix='E')
-        print(response, prefix='E')
+        print('Error!', e2)
+        print('Error!', response)
     time.sleep(3)
 print('Stream started. Starting omnic...')
 check_rating(sys.argv[1])

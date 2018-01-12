@@ -166,6 +166,7 @@ def check_rating(key):
         return
 
 on = False
+print('Waiting for stream...')
 while not on:
     try:
         response = requests.get('https://api.twitch.tv/helix/streams?user_login=' + sys.argv[1], headers={'Client-ID': settings.ClientID})
@@ -184,5 +185,6 @@ while not on:
         print(e2, prefix='E')
         print(response, prefix='E')
     time.sleep(3)
-
+print('Stream started. Starting omnic...')
 check_rating(sys.argv[1])
+print('Stream ended. Performing scheduled restart...')

@@ -168,7 +168,7 @@ def check_rating(key):
 on = False
 while not on:
     try:
-        response = requests.get('https://api.twitch.tv/helix/streams?user_login=' + streamer, headers={'Client-ID': settings.ClientID})
+        response = requests.get('https://api.twitch.tv/helix/streams?user_login=' + sys.argv[1], headers={'Client-ID': settings.ClientID})
         headers = response.headers
         response = response.json()
         print('Limit:',headers['RateLimit-Limit'])

@@ -34,6 +34,7 @@ class OmnicDB:
 class Status:
     def __init__(self):
         self.status = False
+        self.firstrun = False
         self.item = ''
 
 PUBGon = {}
@@ -196,9 +197,11 @@ while True:
             response = response.json()
             print('Limit:',headers['RateLimit-Limit'])
             print('Remaining:', headers['RateLimit-Remaining'])
-            if not s.status and (response != None and response['data'] != None and len(response['data']) != 0 and (response['data'][0]['game_id'] == '493057')):
+            if s.firstrun and not s.status and (response != None and response['data'] != None and len(response['data']) != 0 and (response['data'][0]['game_id'] == '493057')):
                 exit(1)
             s.status = (response != None and response['data'] != None and len(response['data']) != 0 and (response['data'][0]['game_id'] == '493057'))
+            if not s.firstrun and s.status:
+                s.firstrun = True
         except KeyError as e: 
             print(e, prefix='E')
             print(response, prefix='E')

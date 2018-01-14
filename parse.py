@@ -162,7 +162,7 @@ def check_rating(key):
                     print(t)
                     print(txt, '/', txt_2, '/', start, end='')
                     if isTeam:
-                        print('Duo' if teamType == 0 else 'Squad', '/', )
+                        print('Duo' if teamType == 0 else 'Squad', '/', hashval)
                     else:
                         print('Solo')
                 print(time.time() - start_)       

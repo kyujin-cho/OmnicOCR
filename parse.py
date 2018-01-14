@@ -189,9 +189,9 @@ def check_rating(key):
                 print('Sleeping', time_diff)
                 time.sleep(time_diff)
     except Exception as e:
-        sys.stdout.print(RED)
+        sys.stdout.write(RED)
         print(e, file=sys.stderr)
-        sys.stdout.print(RESET)
+        sys.stdout.write(RESET)
         return
 
 on = False

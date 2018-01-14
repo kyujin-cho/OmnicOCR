@@ -165,7 +165,7 @@ def check_rating(key):
                                     check += 1
                                     if check == 3:
                                         ranks.append(txt)
-                                        a.add_score(int(txt[1:]), key, gametype=('팀' if isTeam else '솔로'))
+                                        a.add_score(int(txt[1:]), key, gametype=(('듀오' if teamType == 0 else '스쿼드') if isTeam else '솔로'))
                                         updated = True
                                         init = False
                                 else:

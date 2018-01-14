@@ -10,6 +10,7 @@ import pyocr.builders
 import requests
 import settings
 import pymysql
+import imagehash
 import os
 import os.path
 import sys
@@ -32,6 +33,7 @@ class OmnicDB:
         self.curs.execute(sql, (series, rank, gametype, streamer_id))
 
 a = OmnicDB()
+duo_hash = imagehash.average_hash(Image.open('duo_crop.png'))
 
 def check_rating(key):
     p = subprocess.Popen('sudo rm -rf ts_s'.split(' '))
@@ -84,7 +86,8 @@ def check_rating(key):
     check = 0
     rank = '*'
     init = True
-    isDuo = len(sys.argv) == 3 and sys.argv[2] == '1'
+    isTeam = len(sys.argv) == 3 and sys.argv[2] == '1'
+    teamType = 0 # 0 if duo, 1 if squad
     try:
         print(url)
         while True:
@@ -98,7 +101,7 @@ def check_rating(key):
             print('\n'.join(load))
             print('Index:', index)
             time_diff = 0
-            print('Waiting for {} rank...'.format('Duo' if isDuo else 'Solo') if init else '')
+            print('Waiting for {} rank...'.format('Duo' if isTeam else 'Solo') if init else '')
             for i in range(index, len(load), 2):
                 start_ = time.time()
                 print('123'+ load[i])
@@ -121,11 +124,15 @@ def check_rating(key):
                     start, txt, txt_2 = '', '', ''
                     start = tool.image_to_string(Image.open(command[-1]).crop((70, 655, 160, 695)), lang='pubg_start', builder=pyocr.builders.TextBuilder())
                     if 'START' in start or 'RSART' in start or 'RSTAT' in start:
-                        isDuo = ('RSART' in start or 'RSTAT' in start)
+                        isTeam = ('RSART' in start or 'RSTAT' in start)
                         init = True
+                        if isTeam:
+                            current_hash = imagehash.average_hash(Image.open(command[-1]).crop((40, 470, 190, 495)))
+                            teamType = 0 if(abs(current_hash - duo_hash) <= 4) else 1
+                                
                         print('Started MATCHMAKING... Setting init to True...')
                     if init:
-                        Image.open(command[-1]).crop((160, 170, 220, 210) if isDuo else (120, 170, 180, 210)).save(command[-1].replace('.jpg', '_crop.jpg'))
+                        Image.open(command[-1]).crop((160, 170, 220, 210) if isTeam else (120, 170, 180, 210)).save(command[-1].replace('.jpg', '_crop.jpg'))
                         Image.open(command[-1]).crop((1060, 20, 1155, 85)).convert('LA').save(command[-1].replace('.jpg', '_crop_gs.png'))
                         p = subprocess.Popen('tesseract {} stdout -l pubg -psm 7'.format(command[-1].replace('.jpg', '_crop.jpg')).split(' '), stdout=subprocess.PIPE, stderr=None)
                         p.wait()
@@ -142,7 +149,7 @@ def check_rating(key):
                                     check += 1
                                     if check == 3:
                                         ranks.append(txt)
-                                        a.add_score(int(txt[1:]), key, gametype=('팀' if isDuo else '솔로'))
+                                        a.add_score(int(txt[1:]), key, gametype=('팀' if isTeam else '솔로'))
                                         updated = True
                                         init = False
                                 else:
@@ -151,7 +158,11 @@ def check_rating(key):
                             print(txt, check)
                     print(command[-1])
                     print(t)
-                    print(txt, '/', txt_2, '/', start) 
+                    print(txt, '/', txt_2, '/', start, end='')
+                    if isTeam:
+                        print('Duo' if teamType == 0 else 'Squad')
+                    else:
+                        print('Solo')
                 print(time.time() - start_)       
                 time_diff += (t - (time.time() - start_))
                 

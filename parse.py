@@ -88,6 +88,7 @@ def check_rating(key):
     init = True
     isTeam = len(sys.argv) == 3 and sys.argv[2] == '1'
     teamType = 0 # 0 if duo, 1 if squad
+    hashval = -1
     try:
         print(url)
         while True:
@@ -128,7 +129,8 @@ def check_rating(key):
                         init = True
                         if isTeam:
                             current_hash = imagehash.average_hash(Image.open(command[-1]).crop((40, 470, 190, 495)))
-                            teamType = 0 if(abs(current_hash - duo_hash) <= 4) else 1
+                            hashval = abs(current_hash - duo_hash)
+                            teamType = 0 if(hashval <= 4) else 1
                                 
                         print('Started MATCHMAKING... Setting init to True...')
                     if init:
@@ -160,7 +162,7 @@ def check_rating(key):
                     print(t)
                     print(txt, '/', txt_2, '/', start, end='')
                     if isTeam:
-                        print('Duo' if teamType == 0 else 'Squad')
+                        print('Duo' if teamType == 0 else 'Squad', '/', )
                     else:
                         print('Solo')
                 print(time.time() - start_)       

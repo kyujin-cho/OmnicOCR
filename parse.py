@@ -132,7 +132,7 @@ def check_rating(key):
                             hashval = abs(current_hash - duo_hash)
                             teamType = 0 if(hashval <= 4) else 1
                                 
-                        print('Started MATCHMAKING... Setting init to True...')
+                        print('Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval)
                     if init:
                         Image.open(command[-1]).crop((160, 170, 220, 210) if isTeam else (120, 170, 180, 210)).save(command[-1].replace('.jpg', '_crop.jpg'))
                         Image.open(command[-1]).crop((1060, 20, 1155, 85)).convert('LA').save(command[-1].replace('.jpg', '_crop_gs.png'))
@@ -162,7 +162,7 @@ def check_rating(key):
                     print(t)
                     print(txt, '/', txt_2, '/', start, end='')
                     if isTeam:
-                        print('Duo' if teamType == 0 else 'Squad', '/', hashval)
+                        print('Duo' if teamType == 0 else 'Squad')
                     else:
                         print('Solo')
                 print(time.time() - start_)       

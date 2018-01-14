@@ -14,6 +14,7 @@ import imagehash
 import os
 import os.path
 import sys
+import traceback
 
 RED   = "\033[1;31m"  
 BLUE  = "\033[1;34m"
@@ -190,7 +191,7 @@ def check_rating(key):
                 time.sleep(time_diff)
     except Exception as e:
         sys.stdout.write(RED)
-        print(e, file=sys.stderr)
+        traceback.print_exc()
         sys.stdout.write(RESET)
         return
 

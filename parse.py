@@ -15,6 +15,14 @@ import os
 import os.path
 import sys
 
+RED   = "\033[1;31m"  
+BLUE  = "\033[1;34m"
+CYAN  = "\033[1;36m"
+GREEN = "\033[0;32m"
+RESET = "\033[0;0m"
+BOLD    = "\033[;1m"
+REVERSE = "\033[;7m"
+
 from PIL import Image
 class OmnicDB:
     def __init__(self):
@@ -180,7 +188,10 @@ def check_rating(key):
             elif time_diff > 0:
                 print('Sleeping', time_diff)
                 time.sleep(time_diff)
-    except: 
+    except Exception as e:
+        sys.stdout.print(RED)
+        print(e, file=sys.stderr)
+        sys.stdout.print(RESET)
         return
 
 on = False

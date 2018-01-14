@@ -138,7 +138,7 @@ def check_rating(key):
                         init = True
                         if isTeam:
                             current_hash = imagehash.average_hash(Image.open(command[-1]).crop((40, 470, 190, 495)))
-                            hash_2 = imagehash.average_hash(Image.open(((40, 540, 190, 565))))
+                            hash_2 = imagehash.average_hash(Image.open(command[-1]).crop((40, 540, 190, 565)))
                             hashval = abs(current_hash - duo_hash)
                             hashval2 = abs(current_hash - duo_hash)
                             if hashval > 15:

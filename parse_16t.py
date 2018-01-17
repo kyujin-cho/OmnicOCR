@@ -202,7 +202,7 @@ def check_rating(key):
             print('Index:', index)
             total_time =0.0
             
-            print('Waiting for {} rank...'.format((('듀오' if nonlockvals['teamType'] == 0 else '스쿼드') if nonlockvals['isTeam'] else '솔로') if nonlockvals['init'] ''))
+            print('Waiting for {} rank...'.format((('듀오' if nonlockvals['teamType'] == 0 else '스쿼드') if nonlockvals['isTeam'] else '솔로') if nonlockvals['init'] else ''))
             for i in range(index, len(load), 2):
                 t = float(load[i][8:-5])
                 ts_url = load[i+1]

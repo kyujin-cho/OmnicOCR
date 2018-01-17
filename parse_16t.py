@@ -188,6 +188,7 @@ def check_rating(key):
                 index += 1
             
             print('Index:', index)
+            total_time =0.0
             
             print('Waiting for {} rank...'.format('Duo' if nonlockvals['isTeam'] else 'Solo') if nonlockvals['init'] else '')
             for i in range(index, len(load), 2):
@@ -199,6 +200,7 @@ def check_rating(key):
                     print(ts_url)
                 with open('ts_s/' + str(i//2+1) + '.ts', 'wb') as fw:
                     fw.write(urllib.request.urlopen(ts_url).read())
+                total_time += t
 
                 threads.append(threading.Thread(target=ocr, args=(i,t,key,)))
                 threads[-1].start()
@@ -207,9 +209,9 @@ def check_rating(key):
                 
             print(lockvals['ranks'])
             nonlockvals['cnt'] += 1
-            if time_diff > 0:
-                print('Sleeping', time_diff)
-                time.sleep(time_diff)
+            if total_time - time_diff > 0:
+                print('Sleeping', total_time - time_diff)
+                time.sleep(total_time - time_diff)
     except Exception as e:
         sys.stdout.write(RED)
         traceback.print_exc()

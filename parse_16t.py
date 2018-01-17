@@ -76,6 +76,11 @@ def ocr(i, t, key):
         '-frames:v', '1', 'FILLME'
     ]
     updated = False
+    data = {
+        'start': [],
+        'txt': [],
+        'txt_2': []
+    }
     for j in range(1, 4):
         command[-4] = str((t/3) * (j-1))
         # print('T' + str(i//2+1), ':', ' '.join(command))
@@ -99,7 +104,7 @@ def ocr(i, t, key):
                 
                 nonlockvals['teamType'] = 0 if(hashval <= 4) else 1
                     
-            # print('T' + str(i//2+1), ':', 'Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval)
+            print('T' + str(i//2+1), ':', 'Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval)
         if nonlockvals['init']:
             Image.open(command[-1]).crop((160, 170, 220, 210) if nonlockvals['isTeam'] else (120, 170, 180, 210)).save(command[-1].replace('.jpg', '_crop.jpg'))
             Image.open(command[-1]).crop((1060, 20, 1155, 85)).convert('LA').save(command[-1].replace('.jpg', '_crop_gs.png'))
@@ -109,6 +114,10 @@ def ocr(i, t, key):
             p2 = subprocess.Popen('tesseract {} stdout -l pubg -psm 7'.format(command[-1].replace('.jpg', '_crop_gs.png')).split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             p2.wait()
             txt_2 = p2.communicate()[0].decode('utf-8').split('\n')[0]
+            data['start'].append(start)
+            data['txt'].append(txt)
+            data['txt_2'].append(txt_2)
+            
             with lock:
                 if 4 > len(txt) > 1 and txt[0] == '#' and txt[1:].isnumeric() and int(txt[1:]) > 0 and txt == txt_2 and not ('RSART' in start) and not ('START' in start):
                     if lockvals['rank'] == '*':
@@ -135,7 +144,8 @@ def ocr(i, t, key):
         #     print('T' + str(i//2+1), ':', 'Solo')
         # if updated:
         #     print('T' + str(i//2+1), ':', 'rank updated! Setting init to False...')
-    print('T' + str(i//2+1), ':', time.time() - start_)       
+    print('T' + str(i//2+1), ':', time.time() - start_)     
+    print('T' + str(i//2+1), ':', data)  
 
 
 def check_rating(key):
@@ -192,7 +202,6 @@ def check_rating(key):
             
             print('Waiting for {} rank...'.format('Duo' if nonlockvals['isTeam'] else 'Solo') if nonlockvals['init'] else '')
             for i in range(index, len(load), 2):
-                print('123'+ load[i])
                 t = float(load[i][8:-5])
                 ts_url = load[i+1]
                 if not load[i+1].startswith('http'):

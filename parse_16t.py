@@ -198,7 +198,7 @@ def check_rating(key):
                 with open('ts_s/' + str(i//2+1) + '.ts', 'wb') as fw:
                     fw.write(urllib.request.urlopen(ts_url).read())
 
-                threads.append(threading.Thread(target=ocr, args=(i,t,nonlockvals['cnt'],key)))
+                threads.append(threading.Thread(target=ocr, args=(i,t,key)))
                 threads[-1].start()
                 threads[-1].wait()
                 print(time.time() - start_)       

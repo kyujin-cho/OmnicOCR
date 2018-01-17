@@ -144,7 +144,6 @@ def ocr(i, t, key):
         #     print('T' + str(i//2+1), ':', 'Solo')
         # if updated:
         #     print('T' + str(i//2+1), ':', 'rank updated! Setting init to False...')
-    print('T' + str(i//2+1), ':', time.time() - start_, end=' / ')     
     print('T' + str(i//2+1), ':', data)  
 
 
@@ -190,6 +189,7 @@ def check_rating(key):
         print(url)
         while True:
             start_ = time.time()
+            print('Started at', start_)
             threads = []
             updated = False
             load = urllib.request.urlopen(url).read().decode('utf-8').split('\n')[6:-1]
@@ -214,12 +214,13 @@ def check_rating(key):
                 threads.append(threading.Thread(target=ocr, args=(i,t,key,)))
                 threads[-1].start()
             [t.join() for t in threads]    
-            time_diff = time.time() - start_            
+            time_diff = time.time() - start_       
                 
             print(lockvals['ranks'])
             nonlockvals['cnt'] += 1
             if total_time - time_diff > 0:
-                print('Sleeping', total_time - time_diff)
+                print('Sleeping', )
+                print('Ended at', time.time(), '. Should be restarted at',time.time() + total_time - time_diff)     
                 time.sleep(total_time - time_diff)
     except Exception as e:
         sys.stdout.write(RED)

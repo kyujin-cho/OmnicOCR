@@ -190,7 +190,7 @@ def check_rating(key):
             print('Loads')
             print('\n'.join(load))
             print('Index:', index)
-            lockvals['time_diff'] = 0
+            
             print('Waiting for {} rank...'.format('Duo' if nonlockvals['isTeam'] else 'Solo') if nonlockvals['init'] else '')
             for i in range(index, len(load), 2):
                 print('123'+ load[i])

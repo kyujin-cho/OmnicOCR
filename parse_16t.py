@@ -78,7 +78,7 @@ def ocr(i, t, key):
     updated = False
     for j in range(1, 4):
         command[-4] = str((t/3) * (j-1))
-        print('T' + str(i), ':', ' '.join(command))
+        print('T' + str(i//2+1), ':', ' '.join(command))
         command[-1] = 'ts_s/' + str(nonlockvals['cnt']) + '_' + str(i//2+1) + '_' + str(j) + '.jpg'
         p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # p = subprocess.Popen(command)
@@ -99,7 +99,7 @@ def ocr(i, t, key):
                 
                 nonlockvals['teamType'] = 0 if(hashval <= 4) else 1
                     
-            print('T' + str(i), ':', 'Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval)
+            print('T' + str(i//2+1), ':', 'Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval)
         if nonlockvals['init']:
             Image.open(command[-1]).crop((160, 170, 220, 210) if nonlockvals['isTeam'] else (120, 170, 180, 210)).save(command[-1].replace('.jpg', '_crop.jpg'))
             Image.open(command[-1]).crop((1060, 20, 1155, 85)).convert('LA').save(command[-1].replace('.jpg', '_crop_gs.png'))
@@ -125,17 +125,17 @@ def ocr(i, t, key):
                         else:
                             lockvals['check'] = 1
                             lockvals['rank'] = txt
-                    print('T' + str(i), ':', txt, lockvals['check'])
-        print('T' + str(i), ':', command[-1])
-        print('T' + str(i), ':', t)
-        print('T' + str(i), ':', txt, '/', txt_2, '/', start, '/', end=' ')
+                    print('T' + str(i//2+1), ':', txt, lockvals['check'])
+        print('T' + str(i//2+1), ':', command[-1])
+        print('T' + str(i//2+1), ':', t)
+        print('T' + str(i//2+1), ':', txt, '/', txt_2, '/', start, '/', end=' ')
         if nonlockvals['isTeam']:
-            print('T' + str(i), ':', 'Duo' if nonlockvals['teamType'] == 0 else 'Squad')
+            print('T' + str(i//2+1), ':', 'Duo' if nonlockvals['teamType'] == 0 else 'Squad')
         else:
-            print('T' + str(i), ':', 'Solo')
+            print('T' + str(i//2+1), ':', 'Solo')
         if updated:
-            print('T' + str(i), ':', 'rank updated! Setting init to False...')
-        print('T' + str(i), ':', time.time() - start_)       
+            print('T' + str(i//2+1), ':', 'rank updated! Setting init to False...')
+        print('T' + str(i//2+1), ':', time.time() - start_)       
 
 
 def check_rating(key):
@@ -187,8 +187,6 @@ def check_rating(key):
             while not load[index].startswith('#EXTINF'):
                 index += 1
             
-            print('Loads')
-            print('\n'.join(load))
             print('Index:', index)
             
             print('Waiting for {} rank...'.format('Duo' if nonlockvals['isTeam'] else 'Solo') if nonlockvals['init'] else '')
@@ -202,7 +200,7 @@ def check_rating(key):
                 with open('ts_s/' + str(i//2+1) + '.ts', 'wb') as fw:
                     fw.write(urllib.request.urlopen(ts_url).read())
 
-                threads.append(threading.Thread(target=ocr, args=(i,t,key)))
+                threads.append(threading.Thread(target=ocr, args=(i,t,key,)))
                 threads[-1].start()
             [t.join() for t in threads]    
             time_diff = time.time() - start_            

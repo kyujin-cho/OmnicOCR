@@ -41,6 +41,13 @@ isDuo = len(sys.argv) == 3 and sys.argv[2] == '1'
 
 def ocr(ts, cnt, t, key): 
     global rank
+    global a
+    global check
+    global tool
+    global rank
+    global ranks
+    global init
+    global isDuo
     command = [
         'ffmpeg',
         '-ss', '0',

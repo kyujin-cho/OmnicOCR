@@ -78,7 +78,7 @@ def ocr(i, t, key):
     updated = False
     for j in range(1, 4):
         command[-4] = str((t/3) * (j-1))
-        print('T' + str(i//2+1), ':', ' '.join(command))
+        # print('T' + str(i//2+1), ':', ' '.join(command))
         command[-1] = 'ts_s/' + str(nonlockvals['cnt']) + '_' + str(i//2+1) + '_' + str(j) + '.jpg'
         p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # p = subprocess.Popen(command)
@@ -99,14 +99,14 @@ def ocr(i, t, key):
                 
                 nonlockvals['teamType'] = 0 if(hashval <= 4) else 1
                     
-            print('T' + str(i//2+1), ':', 'Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval)
+            # print('T' + str(i//2+1), ':', 'Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval)
         if nonlockvals['init']:
             Image.open(command[-1]).crop((160, 170, 220, 210) if nonlockvals['isTeam'] else (120, 170, 180, 210)).save(command[-1].replace('.jpg', '_crop.jpg'))
             Image.open(command[-1]).crop((1060, 20, 1155, 85)).convert('LA').save(command[-1].replace('.jpg', '_crop_gs.png'))
-            p = subprocess.Popen('tesseract {} stdout -l pubg -psm 7'.format(command[-1].replace('.jpg', '_crop.jpg')).split(' '), stdout=subprocess.PIPE, stderr=None)
+            p = subprocess.Popen('tesseract {} stdout -l pubg -psm 7'.format(command[-1].replace('.jpg', '_crop.jpg')).split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             p.wait()
             txt = p.communicate()[0].decode('utf-8').split('\n')[0]
-            p2 = subprocess.Popen('tesseract {} stdout -l pubg -psm 7'.format(command[-1].replace('.jpg', '_crop_gs.png')).split(' '), stdout=subprocess.PIPE, stderr=None)
+            p2 = subprocess.Popen('tesseract {} stdout -l pubg -psm 7'.format(command[-1].replace('.jpg', '_crop_gs.png')).split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             p2.wait()
             txt_2 = p2.communicate()[0].decode('utf-8').split('\n')[0]
             with lock:
@@ -125,17 +125,17 @@ def ocr(i, t, key):
                         else:
                             lockvals['check'] = 1
                             lockvals['rank'] = txt
-                    print('T' + str(i//2+1), ':', txt, lockvals['check'])
-        print('T' + str(i//2+1), ':', command[-1])
-        print('T' + str(i//2+1), ':', t)
-        print('T' + str(i//2+1), ':', txt, '/', txt_2, '/', start, '/', end=' ')
-        if nonlockvals['isTeam']:
-            print('T' + str(i//2+1), ':', 'Duo' if nonlockvals['teamType'] == 0 else 'Squad')
-        else:
-            print('T' + str(i//2+1), ':', 'Solo')
-        if updated:
-            print('T' + str(i//2+1), ':', 'rank updated! Setting init to False...')
-        print('T' + str(i//2+1), ':', time.time() - start_)       
+                    # print('T' + str(i//2+1), ':', txt, lockvals['check'])
+        # print('T' + str(i//2+1), ':', command[-1])
+        # print('T' + str(i//2+1), ':', t)
+        # print('T' + str(i//2+1), ':', txt, '/', txt_2, '/', start, '/', end=' ')
+        # if nonlockvals['isTeam']:
+        #     print('T' + str(i//2+1), ':', 'Duo' if nonlockvals['teamType'] == 0 else 'Squad')
+        # else:
+        #     print('T' + str(i//2+1), ':', 'Solo')
+        # if updated:
+        #     print('T' + str(i//2+1), ':', 'rank updated! Setting init to False...')
+    print('T' + str(i//2+1), ':', time.time() - start_)       
 
 
 def check_rating(key):

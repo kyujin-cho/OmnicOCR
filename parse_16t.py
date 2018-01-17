@@ -144,7 +144,7 @@ def ocr(i, t, key):
         #     print('T' + str(i//2+1), ':', 'Solo')
         # if updated:
         #     print('T' + str(i//2+1), ':', 'rank updated! Setting init to False...')
-    print('T' + str(i//2+1), ':', time.time() - start_)     
+    print('T' + str(i//2+1), ':', time.time() - start_, end=' / ')     
     print('T' + str(i//2+1), ':', data)  
 
 

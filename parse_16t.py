@@ -106,7 +106,7 @@ def ocr(i, t, key):
                 else:
                     nonlockvals['teamType'] = 1
                     
-            print('T' + str(i//2+1), ':', 'Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval)
+            print('T' + str(i//2+1), ':', 'Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval, '/', nonlockvals['teamType'])
         if nonlockvals['init']:
             Image.open(command[-1]).crop((160, 170, 220, 210) if nonlockvals['isTeam'] else (120, 170, 180, 210)).save(command[-1].replace('.jpg', '_crop.jpg'))
             Image.open(command[-1]).crop((1060, 20, 1155, 85)).convert('LA').save(command[-1].replace('.jpg', '_crop_gs.png'))
@@ -202,7 +202,7 @@ def check_rating(key):
             print('Index:', index)
             total_time =0.0
             
-            print('Waiting for {} rank...'.format('Duo' if nonlockvals['isTeam'] else 'Solo') if nonlockvals['init'] else '')
+            print('Waiting for {} rank...'.format((('듀오' if nonlockvals['teamType'] == 0 else '스쿼드') if nonlockvals['isTeam'] else '솔로') if nonlockvals['init'] ''))
             for i in range(index, len(load), 2):
                 t = float(load[i][8:-5])
                 ts_url = load[i+1]

@@ -45,10 +45,14 @@ a = OmnicDB()
 
 duo_hash = imagehash.average_hash(Image.open('duo_crop.png'))
 lock = threading.RLock()
+lock2 = threading.RLock()
+timelock = threading.RLock()
+
 lockvals = {
     'ranks' : [],
     'check' : 0,
-    'rank' : '*'
+    'rank' : '*',
+    'time_diff': 0
 }
 nonlockvals = {
     'cnt' : 1,
@@ -62,9 +66,11 @@ def ocr(i, t, key):
     global duo_hash
     global a
     global lock
+    global lock2
     global lockvals
     global nonlockvals
     global tool
+    start_ = time.time()
     command = [
         'ffmpeg',
         '-ss', '0',
@@ -76,7 +82,7 @@ def ocr(i, t, key):
     updated = False
     for j in range(1, 4):
         command[-4] = str((t/3) * (j-1))
-        print(' '.join(command))
+        print('T' + str(i), ':', ' '.join(command))
         command[-1] = 'ts_s/' + str(nonlockvals['cnt']) + '_' + str(i//2+1) + '_' + str(j) + '.jpg'
         p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # p = subprocess.Popen(command)
@@ -97,7 +103,7 @@ def ocr(i, t, key):
                 
                 nonlockvals['teamType'] = 0 if(hashval <= 4) else 1
                     
-            print('Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval)
+            print('T' + str(i), ':', 'Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval)
         if nonlockvals['init']:
             Image.open(command[-1]).crop((160, 170, 220, 210) if nonlockvals['isTeam'] else (120, 170, 180, 210)).save(command[-1].replace('.jpg', '_crop.jpg'))
             Image.open(command[-1]).crop((1060, 20, 1155, 85)).convert('LA').save(command[-1].replace('.jpg', '_crop_gs.png'))
@@ -123,16 +129,20 @@ def ocr(i, t, key):
                         else:
                             lockvals['check'] = 1
                             lockvals['rank'] = txt
-                    print(txt, lockvals['check'])
-        print(command[-1])
-        print(t)
-        print(txt, '/', txt_2, '/', start, '/', end=' ')
+                    print('T' + str(i), ':', txt, lockvals['check'])
+        print('T' + str(i), ':', command[-1])
+        print('T' + str(i), ':', t)
+        print('T' + str(i), ':', txt, '/', txt_2, '/', start, '/', end=' ')
         if nonlockvals['isTeam']:
-            print('Duo' if nonlockvals['teamType'] == 0 else 'Squad')
+            print('T' + str(i), ':', 'Duo' if nonlockvals['teamType'] == 0 else 'Squad')
         else:
-            print('Solo')
+            print('T' + str(i), ':', 'Solo')
         if updated:
-            print('rank updated! Setting init to False...')
+            print('T' + str(i), ':', 'rank updated! Setting init to False...')
+        with lock2:
+            lockvals['time_diff'] += (t - (time.time() - start_))
+        print('T' + str(i), ':', time.time() - start_)       
+
 
 def check_rating(key):
     p = subprocess.Popen('sudo rm -rf ts_s'.split(' '))
@@ -185,10 +195,9 @@ def check_rating(key):
             print('Loads')
             print('\n'.join(load))
             print('Index:', index)
-            time_diff = 0
+            lockvals['time_diff'] = 0
             print('Waiting for {} rank...'.format('Duo' if nonlockvals['isTeam'] else 'Solo') if nonlockvals['init'] else '')
             for i in range(index, len(load), 2):
-                start_ = time.time()
                 print('123'+ load[i])
                 t = float(load[i][8:-5])
                 ts_url = load[i+1]
@@ -200,15 +209,13 @@ def check_rating(key):
 
                 threads.append(threading.Thread(target=ocr, args=(i,t,key)))
                 threads[-1].start()
-                threads[-1].join()
-                print(time.time() - start_)       
-                time_diff += (t - (time.time() - start_))
+            [t.join() for t in threads]                
                 
             print(lockvals['ranks'])
             nonlockvals['cnt'] += 1
-            if time_diff > 0:
-                print('Sleeping', time_diff)
-                time.sleep(time_diff)
+            if lockvals['time_diff'] > 0:
+                print('Sleeping', lockvals['time_diff'])
+                time.sleep(lockvals['time_diff'])
     except Exception as e:
         sys.stdout.write(RED)
         traceback.print_exc()

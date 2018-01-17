@@ -29,11 +29,8 @@ class OmnicDB:
     def __init__(self):
         self.conn = pymysql.connect(host=settings.host, user=settings.user, password=settings.password, db=settings.db, charset='utf8', autocommit=True)
         self.curs = self.conn.cursor()
-        self.cool = -1
 
     def add_score(self, rank, streamer_id, gametype='솔로'):
-        if self.cool != -1 and (time.time() - self.cool) < 60:
-            return
         self.conn.ping(True)
         sql = 'select `series` from `broadcast` where `streamer_id`=%s order by `series` desc limit 1;'
         self.curs.execute(sql, streamer_id)

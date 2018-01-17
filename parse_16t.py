@@ -45,14 +45,11 @@ a = OmnicDB()
 
 duo_hash = imagehash.average_hash(Image.open('duo_crop.png'))
 lock = threading.RLock()
-lock2 = threading.RLock()
-timelock = threading.RLock()
 
 lockvals = {
     'ranks' : [],
     'check' : 0,
-    'rank' : '*',
-    'time_diff': 0
+    'rank' : '*'
 }
 nonlockvals = {
     'cnt' : 1,
@@ -66,7 +63,6 @@ def ocr(i, t, key):
     global duo_hash
     global a
     global lock
-    global lock2
     global lockvals
     global nonlockvals
     global tool
@@ -139,8 +135,6 @@ def ocr(i, t, key):
             print('T' + str(i), ':', 'Solo')
         if updated:
             print('T' + str(i), ':', 'rank updated! Setting init to False...')
-        with lock2:
-            lockvals['time_diff'] += (t - (time.time() - start_))
         print('T' + str(i), ':', time.time() - start_)       
 
 
@@ -185,6 +179,7 @@ def check_rating(key):
     try:
         print(url)
         while True:
+            start_ = time.time()
             threads = []
             updated = False
             load = urllib.request.urlopen(url).read().decode('utf-8').split('\n')[6:-1]
@@ -209,13 +204,14 @@ def check_rating(key):
 
                 threads.append(threading.Thread(target=ocr, args=(i,t,key)))
                 threads[-1].start()
-            [t.join() for t in threads]                
+            [t.join() for t in threads]    
+            time_diff = time.time() - start_            
                 
             print(lockvals['ranks'])
             nonlockvals['cnt'] += 1
-            if lockvals['time_diff'] > 0:
-                print('Sleeping', lockvals['time_diff'])
-                time.sleep(lockvals['time_diff'])
+            if time_diff > 0:
+                print('Sleeping', time_diff)
+                time.sleep(time_diff)
     except Exception as e:
         sys.stdout.write(RED)
         traceback.print_exc()

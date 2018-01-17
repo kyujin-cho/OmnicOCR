@@ -101,8 +101,10 @@ def ocr(i, t, key):
                 hashval2 = abs(hash_2 - duo_hash)
                 if hashval > 15:
                     hashval = hashval2 
-                
-                nonlockvals['teamType'] = 0 if(hashval <= 4) else 1
+                if hashval <= 4:
+                    nonlockvals['teamType'] = 0
+                else:
+                    nonlockvals['teamType'] = 1
                     
             print('T' + str(i//2+1), ':', 'Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval)
         if nonlockvals['init']:

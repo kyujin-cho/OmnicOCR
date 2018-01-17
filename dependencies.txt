@@ -2,3 +2,4 @@ pyocr
 requests
 pymysql
 Pillow
+imagehash

@@ -200,7 +200,7 @@ def check_rating(key):
 
                 threads.append(threading.Thread(target=ocr, args=(i,t,key)))
                 threads[-1].start()
-                threads[-1].wait()
+                threads[-1].join()
                 print(time.time() - start_)       
                 time_diff += (t - (time.time() - start_))
                 

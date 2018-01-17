@@ -206,7 +206,7 @@ def check_rating(key):
                 
             print(lockvals['ranks'])
             nonlockvals['cnt'] += 1
-            elif time_diff > 0:
+            if time_diff > 0:
                 print('Sleeping', time_diff)
                 time.sleep(time_diff)
     except Exception as e:

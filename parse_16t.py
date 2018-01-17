@@ -219,7 +219,7 @@ def check_rating(key):
             print(lockvals['ranks'])
             nonlockvals['cnt'] += 1
             if total_time - time_diff > 0:
-                print('Sleeping', )
+                print('Sleeping', total_time - time_diff)
                 print('Ended at', time.time(), '. Should be restarted at',time.time() + total_time - time_diff)     
                 time.sleep(total_time - time_diff)
     except Exception as e:

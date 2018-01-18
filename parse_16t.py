@@ -40,7 +40,10 @@ class OmnicDB:
         sql = 'insert into `score`(`series`, `rank`, `type`, `streamer_id`) value(%s, %s, %s, %s)'
         self.curs.execute(sql, (series, rank, gametype, streamer_id))
         self.cool = time.time()
-
+        try:
+            requests.get('http://127.0.0.1:13947')
+        except:
+            print('',end='')
 a = OmnicDB()
 
 duo_hash = imagehash.average_hash(Image.open('duo_crop.png'))

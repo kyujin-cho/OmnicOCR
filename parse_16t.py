@@ -45,11 +45,18 @@ a = OmnicDB()
 
 duo_hash = imagehash.average_hash(Image.open('duo_crop.png'))
 lock = threading.RLock()
+teamTypeLock = threading.RLock()
 
 lockvals = {
     'ranks' : [],
     'check' : 0,
     'rank' : '*'
+}
+teamTypeLockVals = {
+    'init': True,
+    'teamCheck': 0,
+    'isTeam': len(sys.argv) == 3 and sys.argv[2] == '1',
+    'teamType' : 0 # 0 if duo, 1 if squad
 }
 nonlockvals = {
     'cnt' : 1,
@@ -63,7 +70,9 @@ def ocr(i, t, key):
     global duo_hash
     global a
     global lock
+    global teamTypeLock
     global lockvals
+    global teamTypeLockVals
     global nonlockvals
     global tool
     start_ = time.time()
@@ -91,24 +100,31 @@ def ocr(i, t, key):
         start, txt, txt_2 = '', '', ''
         start = tool.image_to_string(Image.open(command[-1]).crop((70, 655, 160, 695)), lang='pubg_start', builder=pyocr.builders.TextBuilder())
         if 'START' in start or 'RSART' in start or 'RSTAT' in start:
-            nonlockvals['isTeam'] = ('RSART' in start or 'RSTAT' in start)
-            nonlockvals['init'] = True
-            hashval = -1
-            if nonlockvals['isTeam']:
-                current_hash = imagehash.average_hash(Image.open(command[-1]).crop((40, 470, 190, 495)))
-                hash_2 = imagehash.average_hash(Image.open(command[-1]).crop((40, 540, 190, 565)))
-                hashval = abs(current_hash - duo_hash)
-                hashval2 = abs(hash_2 - duo_hash)
-                if hashval > 15:
-                    hashval = hashval2 
-                if hashval <= 4:
-                    nonlockvals['teamType'] = 0
+            with teamTypeLock:
+                if not teamTypeLock['init'] and teamTypeLockVals['teamCheck'] > 0 and teamTypeLockVals['isTeam'] == ('RSART' in start or 'RSTAT' in start):
+                    teamTypeLockVals['teamCheck'] += 1
+                    if teamTypeLockVals['teamCheck'] == 3:
+                        teamTypeLockVals['isTeam'] = ('RSART' in start or 'RSTAT' in start)
+                        teamTypeLockVals['init'] = True
+                        hashvals = -1
+                        if teamTypeLockVals['isTeam']:
+                            current_hash = imagehash.average_hash(Image.open(command[-1]).crop((40, 470, 190, 495)))
+                            hash_2 = imagehash.average_hash(Image.open(command[-1]).crop((40, 540, 190, 565)))
+                            hashval = abs(current_hash - duo_hash)
+                            hashval2 = abs(hash_2 - duo_hash)
+                            if hashval > 15:
+                                hashval = hashval2 
+                            if hashval <= 4:
+                                teamTypeLockVals['teamType'] = 0
+                            else:
+                                teamTypeLockVals['teamType'] = 1
+                        print('T' + str(i//2+1), ':', 'Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval, '/', nonlockvals['teamType'])
                 else:
-                    nonlockvals['teamType'] = 1
-                    
-            print('T' + str(i//2+1), ':', 'Started MATCHMAKING... Setting init to True...', '/ Hash Diff value:', hashval, '/', nonlockvals['teamType'])
-        if nonlockvals['init']:
-            Image.open(command[-1]).crop((160, 170, 220, 210) if nonlockvals['isTeam'] else (120, 170, 180, 210)).save(command[-1].replace('.jpg', '_crop.jpg'))
+                    teamTypeLockVals['isTeam'] == ('RSART' in start or 'RSTAT' in start)
+
+                        
+        if teamTypeLockVals['init']:
+            Image.open(command[-1]).crop((160, 170, 220, 210) if teamTypeLockVals['isTeam'] else (120, 170, 180, 210)).save(command[-1].replace('.jpg', '_crop.jpg'))
             Image.open(command[-1]).crop((1060, 20, 1155, 85)).convert('LA').save(command[-1].replace('.jpg', '_crop_gs.png'))
             p = subprocess.Popen('tesseract {} stdout -l pubg -psm 7'.format(command[-1].replace('.jpg', '_crop.jpg')).split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             p.wait()
@@ -130,22 +146,12 @@ def ocr(i, t, key):
                             lockvals['check'] += 1
                             if lockvals['check'] == 3:
                                 lockvals['ranks'].append(txt)
-                                a.add_score(int(txt[1:]), key, gametype=(('듀오' if nonlockvals['teamType'] == 0 else '스쿼드') if nonlockvals['isTeam'] else '솔로'))
+                                a.add_score(int(txt[1:]), key, gametype=(('듀오' if teamTypeLockVals['teamType'] == 0 else '스쿼드') if teamTypeLockVals['isTeam'] else '솔로'))
                                 updated = True
-                                nonlockvals['init'] = False
+                                teamTypeLockVals['init'] = False
                         else:
                             lockvals['check'] = 1
                             lockvals['rank'] = txt
-                    # print('T' + str(i//2+1), ':', txt, lockvals['check'])
-        # print('T' + str(i//2+1), ':', command[-1])
-        # print('T' + str(i//2+1), ':', t)
-        # print('T' + str(i//2+1), ':', txt, '/', txt_2, '/', start, '/', end=' ')
-        # if nonlockvals['isTeam']:
-        #     print('T' + str(i//2+1), ':', 'Duo' if nonlockvals['teamType'] == 0 else 'Squad')
-        # else:
-        #     print('T' + str(i//2+1), ':', 'Solo')
-        # if updated:
-        #     print('T' + str(i//2+1), ':', 'rank updated! Setting init to False...')
     print('T' + str(i//2+1), ':', data)  
 
 

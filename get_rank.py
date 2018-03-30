@@ -1,16 +1,17 @@
-mport json
+import json
 import time
 import sys 
 import settings 
 import requests
 import dateutil 
 import datetime
-import pymysql
 
+import errors
+import database
+import test
 
 servers = ['pc-oc', 'pc-eu', 'pc-as', 'pc-krjp', 'pc-na', 'pc-sa', 'pc-sea']
 base_url = 'https://api.playbattlegrounds.com/shards'
-endpoint = 'matches'
 header = {
   "Authorization": settings.api_key,
   "Accept": "application/vnd.api+json"
@@ -18,27 +19,7 @@ header = {
 
 sleep_time = 6
 
-class OmnicDB:
-    def __init__(self):
-        self.conn = pymysql.connect(host=settings.host, user=settings.user, password=settings.password, db=settings.db, charset='utf8', autocommit=True)
-        self.curs = self.conn.cursor()
-
-    def add_score(self, rank, kills, streamer_id, gametype='솔로'):
-        self.conn.ping(True)
-        sql = 'select `series` from `broadcast` where `streamer_id`=%s order by `series` desc limit 1;'
-        self.curs.execute(sql, streamer_id)
-        rows = self.curs.fetchall()
-        series = rows[0][0]
-
-        sql = 'insert into `score`(`series`, `rank`, `kills`, type`, `streamer_id`) value(%s, %s, %s, %s, %s)'
-        self.curs.execute(sql, (series, rank, gametype, streamer_id))
-        self.cool = time.time()
-        try:
-            requests.get('http://127.0.0.1:13947')
-        except:
-            print('',end='')
-
-db = OmnicDB()
+db = database.OmnicDB()
 
 def array_find(l, conditions):
     for i in l:
@@ -51,37 +32,61 @@ def array_find(l, conditions):
             return i
     return None
 
+def match_list(streamer, server, mock=False):
+    url = base_url + '/' + server + '/matches?filter[playerNames]=' + streamer
+    response = test.mock_functions.mock_get_match_list(streamer, server) if mock else requests.get(url, headers=header)
+    if response.status_code != 200:
+        return response.json()
+    elif response.status_code == 401:
+        raise errors.UnauthorizedError()
+    elif response.status_code == 404:
+        raise errors.DataNotFoundError()
+    elif response.status_code == 429:
+        raise errors.TooManyRequestsError()
+    else:
+        raise errors.PUBGUnknownError()
+
+def telemetry(data, mock=False):
+    latest_game = data['id']
+    game_type, asset_id = data['attributes']['gameMode'], data['assets'][0]['id']
+    
+    telemetry_url = array_find(data['included'], [('type', 'asset'), ('id', asset_id)])['attributes']['URL']
+    telemetry = test.mock_functions.mock_get_telemetry(telemetry_url) if mock else requests.get(telemetry_url, headers=header)
+    return telemetry.json()
+
+def get_ranking(telemetry):
+    log_match_end_players = array_find(telemetry, [('_T', 'LogMatchEnd')])['characters']
+    streamer_stat = array_find(log_match_end_players, [('name', streamer)])
+    return streamer_stat['ranking']
+
+def get_kills(telemetry):
+    kills = 0
+    for d in telemetry:
+        if d['_T'] == 'LogPlayerKill' and d['killer']['name'] == streamer:
+            kills += 1
+    return kills
+
+def find_data_and_insert(data):
+    telemetry_data = telemetry(data)
+    rank, kills = get_ranking(telemetry_data), get_kills(telemetry_data)
+    db.add_score(rank, kills, streamer, gametype=game_type)
+    latest_game = data
+    time.sleep(sleep_time * 2)
+
 def check_rating(streamer):
     latest_game = None
     while True:
         for server in servers:
-            url = base_url + '/' + server + '/' + endpoint
-            url += '?filter[playerNames]=' + streamer
-            response = requests.get(url, headers=header)
-            if response.status_code != 200:
+            response = None
+            try:
+                response = match_list(streamer, server)
+            except Error as e:
+                print(e)
                 continue
-            
-            data = response.json()['data'][0]
-            if latest_game == None and dateutil.parser.parse(data['attributes']['createdAt']) > datetime.datetime.now().time():
-                latest_game = data['id']
-                game_type, asset_id = data['attributes']['gameMode'], data['assets'][0]['id']
-                
-                telemetry_url = array_find(data['included'], [('type', 'asset'), ('id', asset_id)])['attributes']['URL']
-                telemetry = requests.get(telemetry_url, headers=header)
-                telemetry_data = telemetry.json()
-                
-                log_match_end_players = array_find(telemetry_data, [('_T', 'LogMatchEnd')])['characters']
-                streamer_stat = array_find(log_match_end_players, [('name', streamer)])
-                rank = streamer_stat['ranking']
-
-                kills = 0
-                for d in telemetry_data:
-                    if d['_T'] == 'LogPlayerKill' and d['killer']['name'] == streamer:
-                        kills += 1
-                
-                db.add_score(rank, kills, streamer, gametype=game_type)
-                
-
+            data = response['data'][0]
+            if latest_game == None and dateutil.parser.parse(data['attributes']['createdAt']) > datetime.datetime.now().time() \
+            or latest_game != None and dateutil.parser.parse(data['attributes']['createdAt']) > dateutil.parser.parse(latest_game['attributes']['createdAt']):
+                find_data_and_insert(data)                
 
 on = False
 print('Waiting for stream...')

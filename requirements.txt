@@ -1,0 +1,6 @@
+PyMySQL==0.7.11
+requests==2.18.4
+requests-toolbelt==0.8.0
+python-dateutil==2.6.1
+pytz==2017.3
+pytest==3.5.0

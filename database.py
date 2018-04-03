@@ -1,5 +1,7 @@
 import settings 
 import pymysql
+import requests
+import time
 
 class OmnicDB:
     def __init__(self):
@@ -16,7 +18,7 @@ class OmnicDB:
         sql = 'insert into `score`(`series`, `rank`, `kills`, type`, `streamer_id`) value(%s, %s, %s, %s, %s)'
         self.curs.execute(sql, (series, rank, gametype, streamer_id))
         self.cool = time.time()
-        try:
-            requests.get('http://127.0.0.1:13947')
-        except:
-            print('',end='')
+        # try:
+        #     requests.get('http://127.0.0.1:13947')
+        # except:
+        #     print('',end='')

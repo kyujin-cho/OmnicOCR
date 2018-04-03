@@ -1,3 +1,7 @@
+class CacheIDContaminatedError(Exception):
+    def __str__(self):
+        return "Player ID in cache file is contaminated!"
+
 class DataNotFoundError(Exception):
     def __str__(self):
         return "Requested data not found"

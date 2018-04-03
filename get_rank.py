@@ -11,7 +11,7 @@ import test
 import re
 import os
 
-servers = ['pc-oc', 'pc-eu', 'pc-as', 'pc-krjp', 'pc-na', 'pc-sa', 'pc-sea']
+servers = ['pc-oc', 'pc-eu', 'pc-as', 'pc-krjp', 'pc-jp', 'pc-na', 'pc-sa', 'pc-sea']
 base_url = 'https://api.playbattlegrounds.com/shards'
 header = {
   "Authorization": os.environ['omnic_pubg_api_key'],
@@ -42,15 +42,28 @@ def cache_pid(player, pid):
     with open('id_cache', 'a') as fw:
         fw.write(player + '=' + pid + '\n')
 
+def array_find_dict(condition, i):
+    for k in condition[1].keys():
+        if k not in i[condition[0]].keys() or condition[1][k] != i[condition[0]][k]:
+            return False
+    return True
+
 def array_find(l, conditions):
+    find_result = []
     for i in l:
         match = True
         for condition in conditions:
-            if condition[1] != i[condition[0]]:
+            if condition[1] == i[condition[0]]:
+                match = True
+            elif type(condition[1]) == dict and condition[0] in i.keys() and type(i[condition[0]]) == dict:
+                if not array_find_dict(condition, i):
+                    match = False
+                    break
+            else:
                 match = False
                 break
         if match:
-            return i
+            find_result.append(i)
     return None
 
 def latest_cond(latest_game, updatedAt):
@@ -96,7 +109,7 @@ def get_game(match_id, server):
     
 def get_telemetry_url(data):
     asset_id = data['data']['relationships']['assets']['data'][0]['id']
-    telemetry_url = array_find(data['included'], [('type', 'asset'), ('id', asset_id)])['attributes']['URL']
+    telemetry_url = array_find(data['included'], [('type', 'asset'), ('id', asset_id)])[0]['attributes']['URL']
     return telemetry_url
  
 def get_telemetry(data):
@@ -104,9 +117,19 @@ def get_telemetry(data):
     return telemetry.json()
 
 def get_ranking(telemetry, streamer):
-    log_match_end_players = array_find(telemetry, [('_T', 'LogMatchEnd')])['characters']
-    streamer_stat = array_find(log_match_end_players, [('name', streamer)])
-    return streamer_stat['ranking']
+    log_match_end_players = array_find(telemetry, [('_T', 'LogPlayerKill'), ('victim', {'name': streamer})])[0]
+    if log_match_end_players:
+        return 1
+    else:
+        log_match_end_players = log_match_end_players['victim']
+        if log_match_end_players['ranking'] == 0:
+            team_player_victims = array_find(telemetry, [('_T', 'LogPlayerKill'), ('victim', {'teamId': log_match_end_players['teamId']})])
+            for victim in team_player_victims:
+                if victim['victim']['ranking'] != 0:
+                    return victim['victim']['ranking']
+                return -1
+    streamer_stat = log_match_end_players['ranking']
+    return streamer_stat
 
 def get_kills(telemetry, streamer):
     kills = 0
@@ -123,31 +146,44 @@ def find_data_and_insert(data, streamer):
     rank, kills, game_type = get_ranking(telemetry_data, streamer), get_kills(telemetry_data, streamer), get_game_type(data)
     db.add_score(rank, kills, streamer, gametype=game_type)
 
-def check_rating(streamer):
+def check_rating(streamers):
     latest_game = None
     while True:
-        for server in servers:
-            data = None
-            try:
-                data = get_player(streamer, server)
-            except Exception as e:
-                print(e)
+        for streamer in streamers:
+            for server in servers:
+                print(server, 'Server,', streamer, 'Streamer => ', end='')
+                data = None
+                try:
+                    data = get_player(streamer, server)
+                except Exception as e:
+                    print(e)
+                    time.sleep(sleep_time)
+                    continue
+                is_latest = latest_cond(latest_game, data['attributes']['updatedAt'])
+                print('Found data.Is it latest data?', is_latest, end=' ')
+                print('Timestamp: latest => {}, game => {}'.format(datetime.datetime.now(), data['attributes']['updatedAt']))
+                if is_latest:
+                    latest_game = get_game(data['relationships']['matches'][0], server)
+                    find_data_and_insert(latest_game, streamer)
+                    time.sleep(sleep_time)
                 time.sleep(sleep_time)
-                continue
-            if latest_cond(latest_game, data['attributes']['updatedAt']):
-                latest_game = get_game(data['relationships']['matches'][0], server)
-                find_data_and_insert(latest_game, streamer)
-                time.sleep(sleep_time)
-            time.sleep(sleep_time)
 
 playerIDs = get_cached_ids()
 
 def main():
+    is_login_nick_seperated = False
+    if sys.argv[-1].startswith('--login='):
+        login_nick = sys.argv[-1][8:]
+        is_login_nick_seperated = True
+    else:
+        login_nick = sys.argv[1]
+    
+    print('Inspecting {}\'s stream...'.format(login_nick))
     on = False
     print('Waiting for stream...')
     while not on:
         try:
-            response = requests.get('https://api.twitch.tv/helix/streams?user_login=' + sys.argv[1], headers={'Client-ID': os.environ['omnic_ClientID']})
+            response = requests.get('https://api.twitch.tv/helix/streams?user_login=' + login_nick, headers={'Client-ID': os.environ['omnic_ClientID']})
             headers = response.headers
             response = response.json()
             print('Limit:',headers['RateLimit-Limit'])
@@ -164,8 +200,9 @@ def main():
             print('Error!', response)
         time.sleep(3)
     print('Stream started. Starting omnic...')
-    check_rating(sys.argv[1])
+    check_rating(sys.argv[1:-1]) if is_login_nick_seperated else check_rating(sys.argv[1:])
     print('Stream ended. Performing scheduled restart...')
 
-if __name__ == 'main':
+if __name__ == '__main__':
     main()
+    

@@ -1,5 +1,5 @@
 # 전적옴닉 (트위치 스트리머 배그 전적 자동인식 스크립트)
-[![Build Status](https://travis-ci.org/thy2134/OmnicOCR.svg?branch=master)](https://travis-ci.org/thy2134/OmnicOCR)
+![Build Status](https://travis-ci.org/thy2134/OmnicOCR.svg?branch=master)
 ## 요구사항
 - Python3
 - requirements.txt의 라이브러리들 (`pip3 install -r requirements.txt`로 설치가능 )

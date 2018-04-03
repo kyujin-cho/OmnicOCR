@@ -1,7 +1,6 @@
 import json
 import time
 import sys 
-import settings 
 import requests
 import dateutil.parser 
 import datetime

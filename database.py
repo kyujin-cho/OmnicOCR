@@ -15,8 +15,8 @@ class OmnicDB:
         rows = self.curs.fetchall()
         series = rows[0][0]
 
-        sql = 'insert into `score`(`series`, `rank`, `kills`, type`, `streamer_id`) value(%s, %s, %s, %s, %s)'
-        self.curs.execute(sql, (series, rank, gametype, streamer_id))
+        sql = 'insert into `score`(`series`, `rank`, `kill`, `type`, `streamer_id`) value(%s, %s, %s, %s, %s)'
+        self.curs.execute(sql, (series, rank, kills, gametype, streamer_id))
         self.cool = time.time()
         # try:
         #     requests.get('http://127.0.0.1:13947')

@@ -1,5 +1,6 @@
 import pytest
 import requests
+import dateutil.parser
 import get_rank
 import errors
 import json
@@ -39,6 +40,9 @@ array_find_data = [
 player_data = None
 match_data = None
 telemetry_data = None
+telemetry_data_2 = None
+telemetry_data_3 = None
+
 
 with open('test/data/players/pc-oc_Funzinnu', 'r') as fr:
     player_data = json.loads(fr.read())
@@ -48,6 +52,12 @@ with open('test/data/matches/438031fe-6ff9-4b6a-b0ea-37eb4eac5ae5', 'r') as fr:
 
 with open('test/data/telemetry/e59b54b1-35c6-11e8-acca-0a5864631f81', 'r') as fr:
     telemetry_data = json.loads(fr.read())
+
+with open('test/data/telemetry/5f9d30e9-3748-11e8-9224-0a586467580b', 'r') as fr:
+    telemetry_data_2 = json.loads(fr.read())
+
+with open('test/data/telemetry/5f9d30e9-3748-11e8-9224-0a586467581d', 'r') as fr:
+    telemetry_data_3 = json.loads(fr.read())
 
 def pytest_sessionstart(session):
     print('Clearing id cache file before test...')
@@ -117,26 +127,22 @@ def test_should_put_multiple_ids():
 
 def test_should_find_item_in_array():
     found = get_rank.array_find(array_find_data, [('other', '#')])
-    assert found == array_find_data[2]
+    assert found == [array_find_data[2]]
 
 def test_should_only_one_find_item_in_array_multi_cond():
-    found = get_rank.array_find(array_find_data, [('bool', True), ('some', '3')])
-    assert found == array_find_data[2]
+    found = get_rank.array_find(array_find_data, [('bool', True), ('some', '1')])
+    assert found == array_find_data[:2]
 
 def test_should_return_appropriate_boolean():
     latest_game = {
         'attributes': {
             'updatedAt': ''
         }
-    }
-    assert not get_rank.latest_cond(None, '2018-04-01T16:21:34Z')
-    
-    latest_game['attributes']['updatedAt'] = '2018-04-01T16:34:34Z'
+    }    
+    latest_game['attributes']['updatedAt'] = dateutil.parser.parse('2018-04-01T16:34:34Z')
     assert not get_rank.latest_cond(latest_game, '2018-04-01T16:21:34Z')
-    
-    assert get_rank.latest_cond(None, '2020-04-01T16:12:34Z')
 
-    latest_game['attributes']['updatedAt'] = '2018-03-01T16:21:34Z'
+    latest_game['attributes']['updatedAt'] = dateutil.parser.parse('2018-03-01T16:21:34Z')
     assert get_rank.latest_cond(latest_game, '2018-04-01T16:21:34Z')
 
 def test_should_get_player():
@@ -154,11 +160,14 @@ def test_should_raise_not_found():
 
 def test_should_find_telemetry_url_from_data():
     assert get_rank.get_telemetry_url(match_data) == 'https://telemetry-cdn.playbattlegrounds.com/bluehole-pubg/pc-krjp/2018/04/01/16/08/e59b54b1-35c6-11e8-acca-0a5864631f81-telemetry.json'
-    
+
 def test_should_get_rank_kills_game_type():
-    rank, kills, game_type = get_rank.get_ranking(telemetry_data, '0xFFMark'), get_rank.get_kills(telemetry_data, '0xFFMark'), get_rank.get_game_type(match_data)
-    assert game_type == 'squad'
-    assert kills == 0 
-    assert rank == 1
-    
+    data = get_rank.get_ranking(telemetry_data, '0xFFMark'), get_rank.get_kills(telemetry_data, '0xFFMark'), get_rank.get_game_type(match_data)
+    assert data == (1, 0, 'squad')
+
+    data = get_rank.get_ranking(telemetry_data_2, 'Funzinnu'), get_rank.get_kills(telemetry_data_2, 'Funzinnu')
+    assert data == (16, 3)
+
+    data = get_rank.get_ranking(telemetry_data_3, 'Funzinnu'), get_rank.get_kills(telemetry_data_3, 'Funzinnu')
+    assert data == (16, 3)
 

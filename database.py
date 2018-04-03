@@ -1,11 +1,11 @@
-import settings 
 import pymysql
 import requests
 import time
+import os
 
 class OmnicDB:
     def __init__(self):
-        self.conn = pymysql.connect(host=settings.host, user=settings.user, password=settings.password, db=settings.db, charset='utf8', autocommit=True)
+        self.conn = pymysql.connect(host=os.environ['omnic_db_host'], user=os.environ['omnic_db_user'], password=os.environ['omnic_db_password'], db=os.environ['omnic_db'], charset='utf8', autocommit=True)
         self.curs = self.conn.cursor()
 
     def add_score(self, rank, kills, streamer_id, gametype='솔로'):

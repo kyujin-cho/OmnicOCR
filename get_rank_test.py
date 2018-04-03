@@ -3,6 +3,7 @@ import requests
 import get_rank
 import errors
 import json
+import os
 
 array_find_data = [
      {
@@ -55,6 +56,10 @@ def pytest_sessionstart(session):
 def clear_id():
     with open('id_cache', 'w') as fw:
         fw.write('')
+
+def test_should_contain_all_auth_informations():
+    for key in ['db_host', 'db_user', 'db_password', 'db', 'ClientID', 'pubg_api_key']:
+        assert 'omnic_' + key in os.environ.keys()
 
 def test_should_auth_properly():
     res = requests.get(get_rank.base_url + '/pc-krjp/players', headers=get_rank.header)

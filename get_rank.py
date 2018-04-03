@@ -10,11 +10,12 @@ import errors
 import database
 import test
 import re
+import os
 
 servers = ['pc-oc', 'pc-eu', 'pc-as', 'pc-krjp', 'pc-na', 'pc-sa', 'pc-sea']
 base_url = 'https://api.playbattlegrounds.com/shards'
 header = {
-  "Authorization": settings.api_key,
+  "Authorization": os.environ['omnic_pubg_api_key'],
   "Accept": "application/vnd.api+json"
 }
 m = re.compile(r'account\.[0-9a-zA-Z]+')
@@ -147,7 +148,7 @@ def main():
     print('Waiting for stream...')
     while not on:
         try:
-            response = requests.get('https://api.twitch.tv/helix/streams?user_login=' + sys.argv[1], headers={'Client-ID': settings.ClientID})
+            response = requests.get('https://api.twitch.tv/helix/streams?user_login=' + sys.argv[1], headers={'Client-ID': os.environ['omnic_ClientID']})
             headers = response.headers
             response = response.json()
             print('Limit:',headers['RateLimit-Limit'])

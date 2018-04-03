@@ -3,3 +3,6 @@ log.txt
 __pycache__
 ts_s
 reboot
+.pytest_cache
+test/data
+id_cache
